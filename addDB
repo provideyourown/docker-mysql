@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#Usage: addDB CONTAINER_STUB DBNAME USER PASS
+#Ex:    addDB dev user_mysite wordpress1 athsnthaoeu
+
+if [ $# -lt 4 ]
+then
+  echo "Error - you must supply 4 arguments. Usage: addDB CONTAINER_STUB DBNAME USER PASS"
+  exit
+fi
+
+source config.sh # import DB_GLOBAL_USER & DB_GLOBAL_PASS
+
+CSTUB=$1
+DBNAME=$2
+USER=$3
+PASS=$4
+IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CSTUB'-mysql')
+
+tempFile='/tmp/create_mysql_db.sql'
+# create the file (via cat > $tempFile), and write to it (via <<QUERY_INPUT)
+# GRANT line will create the user if he doesn't exist as well - that way if the user does exist, we won't get an error
+cat > $tempFile <<QUERY_INPUT
+CREATE DATABASE IF NOT EXISTS \`$DBNAME\`;
+GRANT ALL ON \`$DBNAME\`.* TO '$USER'@'%' IDENTIFIED BY '$PASS';
+FLUSH PRIVILEGES;
+QUERY_INPUT
+
+
+CMD="exec mysql -h'${IP}' -P3306 -u${DB_GLOBAL_USER} -p${DB_GLOBAL_PASS} < ${tempFile}"
+QCMD="\"${CMD}\""
+#echo $QCMD
+RCMD="docker run -i -t --link ${CSTUB}-mysql:mysql -v ${tempFile}:${tempFile} --rm mysql sh -c $QCMD"
+#echo $RCMD
+eval $RCMD
+

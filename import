@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#Usage: import CONTAINER_STUB DBNAME FILENAME
+#Ex:    import dev user_mysite ./someFile
+
+if [ $# -lt 3 ]
+then
+  echo "Error - you must supply 3 arguments. Usage: import CONTAINER_STUB DBNAME FILENAME"
+  exit
+fi
+
+source config.sh # import DB_GLOBAL_USER & DB_GLOBAL_PASS
+
+CSTUB=$1
+DBNAME=$2
+FILE=$3
+IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CSTUB'-mysql')
+tempFile='/tmp/db_to_import.sql'
+#echo ${tempFile}
+CMD="exec mysql -h'${IP}' -P3306 -u${DB_GLOBAL_USER} -p${DB_GLOBAL_PASS} ${DBNAME} < ${tempFile}"
+QCMD="\"${CMD}\""
+#echo $QCMD
+RCMD="docker run -i -t --link ${CSTUB}-mysql:mysql -v ${FILE}:${tempFile} --rm mysql sh -c $QCMD"
+#echo $RCMD
+eval $RCMD
+

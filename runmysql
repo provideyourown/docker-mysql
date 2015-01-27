@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# usage: ./runshell CONTAINER_STUB
+# ex:    ./runshell dev
+
+if [ $# -lt 1 ]
+then
+  echo "Error - you must supply 1 arguments. Usage: runmysqll CONTAINER_STUB"
+  exit
+fi
+
+source config.sh # import DB_GLOBAL_USER & DB_GLOBAL_PASS
+
+CSTUB=$1
+IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $NAME)
+
+RCMD="docker exec -i -t ${CSTUB}-mysql bash -c 'exec mysql -u${DB_GLOBAL_USER} -p${DB_GLOBAL_PASS}'"
+#echo $RCMD
+eval $RCMD

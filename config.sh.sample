@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# root user & password
+DB_GLOBAL_USER="root"
+DB_GLOBAL_PASS="temp"
+# directory to be used for mysql volumes
+DB_VOL_DIR="/home/ME/development/mysql/vols"

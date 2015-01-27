@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# usage: ./export CONTAINER_STUB DB_NAME
+# ex:    ./export dev user_mysite
+
+if [ $# -lt 2 ]
+then
+  echo "Error - you must supply 2 arguments. Usage: export CONTAINER_STUB DBNAME"
+  exit
+fi
+
+source config.sh # import DB_GLOBAL_USER & DB_GLOBAL_PASS
+
+CSTUB=$1
+DBNAME=$2
+
+CMD="mysqldump -u ${DB_GLOBAL_USER} -p${DB_GLOBAL_PASS} ${DBNAME}"
+QCMD="'"$CMD"'"
+RCMD="docker exec -i -t ${CSTUB}-mysql sh -c $QCMD  > ${DBNAME}.sql"
+
+#echo $RCMD
+eval $RCMD

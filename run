@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#Usage: run CONTAINER_STUB      -> CONTAINER_STUB should be the mysql subdir name; the container will be named CONTAINER_STUB-mysql
+#Ex:    run dev
+
+if [ $# -lt 1 ]
+then
+  echo "Error - you must supply 1 arguments. Usage: run CONTAINER_STUB"
+  exit
+fi
+
+source config.sh # import DB_GLOBAL_USER, DB_GLOBAL_PASS & DB_VOL_DIR
+
+CSTUB=$1
+docker run --name ${CSTUB}-mysql -e MYSQL_ROOT_PASSWORD=${DB_GLOBAL_PASS} -v ${DB_VOL_DIR}/${CSTUB}:/var/lib/mysql -d mysql
